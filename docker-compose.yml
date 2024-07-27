@@ -5,9 +5,9 @@ services:
     image: postgres:latest
     container_name: inotives_postgres
     environment: 
-      POSTGRES_USER: inotives # should move this to env
-      POSTGRES_PASSWORD: postgrespwd # should move this to env
-      POSTGRES_DB: inotives # should move this to env
+      POSTGRES_USER: ${POSTGRES_USER} # should move this to env
+      POSTGRES_PASSWORD: ${POSTGRES_PWD} # should move this to env
+      POSTGRES_DB: inotives 
     ports:
       - "5433:5432" # Change the host port to 5433
     volumes:

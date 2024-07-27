@@ -5,3 +5,4 @@ SQLAlchemy==2.0.31
 beautifulsoup4==4.12.3
 lxml==5.2.2
 prefect==2.19.8
+python-dotenv

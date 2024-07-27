@@ -20,18 +20,38 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-4. Once all packages are installed, you should start your dockerize postgresdb. 
+4. Next make sure to create `.env` file that contain all the credentials to your services like DB, API key etc. Here are the template for `.env` file.
+```
+POSTGRES_USER='your_username' 
+POSTGRES_PWD='your_password' 
+```
+
+5. Once all packages are installed, you should start your dockerize postgresdb. Please ensure the `.env` is created since we are using those creds in the docker compose. 
 ```
 docker compose up -d 
 ```
 
-5. Now, you can ran the first flow which was to create all the required tables
+1. Now, you can ran the first flow which was to create all the required tables
 ```
 python run_flow.py
 ```
 
-6. Prefect come with the local server where you can monitor your flow activities in a pretty dashboard. You can start the server by using 
+1. Prefect come with the local server where you can monitor your flow activities in a pretty dashboard. You can start the server by using 
 ```
 prefect server start
 ```
 
+
+### Public Data Sources
+- [Coinmetrics CSV](https://coinmetrics.io/community-network-data/)
+- [Coingecko API](https://docs.coingecko.com/reference/introduction)
+- [Coinmarketcap](https://coinmarketcap.com/currencies/bitcoin/historical-data/)
+- [Open Exchange rate](https://docs.openexchangerates.org/reference/api-introduction)
+- [SGD current rates](https://www.sgrates.com/bankrate/dbs.html)
+- [Etherscan](https://docs.etherscan.io/) 
+- [Chainz Explorer](https://chainz.cryptoid.info/api.dws)
+- [Binance Exchange Public Data](https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#klinecandlestick-data)
+- [Kraken Public Data](https://docs.kraken.com/rest/#tag/Spot-Market-Data/operation/getOHLCData)
+- [Crypto.com Public Data](https://exchange-docs.crypto.com/exchange/v1/rest-ws/index.html#reference-and-market-data-api)
+- [Gemini Public Data](https://docs.gemini.com/rest-api/#symbols)
+- [Alpha Vantage Stock API](https://www.alphavantage.co/documentation/)
