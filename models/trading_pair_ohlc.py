@@ -7,7 +7,10 @@ class TradingOHLC(Base):
         {'extend_existing': True}
     )  
 
-    uniq_key = Column(Integer, primary_key=True) #uniq_key using source, timestamp, trade_pair, interval
+    uniq_key = Column(String, primary_key=True) #uniq_key using source, timestamp, trade_pair, interval
+    timestamp = Column(Integer, nullable=False)
+    trade_date = Column(Date, nullable=False)
+    trade_timestamp = Column(DateTime, nullable=False)
     source = Column(String, nullable=False)
     trade_pair = Column(String, nullable=False)
     interval = Column(String, nullable=False) # interval=[1m,5m,15m,30m,1h,12h,24h]
@@ -17,5 +20,4 @@ class TradingOHLC(Base):
     close = Column(Numeric, nullable=True)
     volume = Column(Numeric, nullable=True)
     count = Column(Integer, nullable=True)
-    trade_date = Column(Date, nullable=False)
-    trade_timestamp = Column(DateTime, nullable=False)
+

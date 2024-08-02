@@ -3,13 +3,13 @@ version: '3.8'
 services: 
   postgres:
     image: postgres:latest
-    container_name: inotives_postgres
+    container_name: postgres_local
     environment: 
-      POSTGRES_USER: ${POSTGRES_USER} # should move this to env
-      POSTGRES_PASSWORD: ${POSTGRES_PWD} # should move this to env
-      POSTGRES_DB: inotives 
+      POSTGRES_USER: ${POSTGRES_USER} 
+      POSTGRES_PASSWORD: ${POSTGRES_PWD} 
+      POSTGRES_DB: ${POSTGRES_DBNAME} 
     ports:
-      - "5433:5432" # Change the host port to 5433
+      - "${POSTGRES_PORT}:5432" # Map local:container
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
