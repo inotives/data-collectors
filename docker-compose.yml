@@ -11,7 +11,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432" # Map local:container
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ~/data/postgres:/var/lib/postgresql/data
     networks:
       - my_network
 volumes:

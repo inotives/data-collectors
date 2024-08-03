@@ -1,4 +1,6 @@
-from sqlalchemy import create_engine, Column, Integer, String, Sequence, MetaData
+import pandas as pd
+from sqlalchemy import create_engine, MetaData
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -48,6 +50,34 @@ class SqlAlc(object):
             raise
         finally:
             session.close()
+
+    def upsert_data(self, table_class, data):
+        session = self.Session()
+        try:
+            # Check if data is a pandas DataFrame
+            if not isinstance(data, pd.DataFrame):
+                raise TypeError("The data provided is not a pandas DataFrame.")
+            
+            # Convert DataFrame to list of dictionaries for upsert
+            data_dicts = data.to_dict(orient='records')
+            
+            # Prepare upsert statement
+            insert_stmt = insert(table_class).values(data_dicts)
+            
+            # Define the conflict resolution (e.g., on primary key conflict)
+            upsert_stmt = insert_stmt.on_conflict_do_update(
+                index_elements=[table_class.__table__.primary_key.columns.values()],
+                set_={c.name: insert_stmt.excluded[c.name] for c in table_class.__table__.columns if c.name != 'id'}
+            )
+            session.execute(upsert_stmt)
+            session.commit()
+        except SQLAlchemyError as e:
+            session.rollback()
+            print(f"Error upserting data: {e}")
+            raise
+        finally:
+            session.close()
+
 
     def close(self):
         self.Session.remove()

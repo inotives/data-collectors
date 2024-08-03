@@ -24,22 +24,31 @@ pip install -r requirements.txt
 ```
 POSTGRES_USER='your_username' 
 POSTGRES_PWD='your_password' 
+POSTGRES_PORT='5432'
+POSTGRES_DBNAME='postgres'
+POSTGRES_HOST='localhost'
 ```
 
-5. Once all packages are installed, you should start your dockerize postgresdb. Please ensure the `.env` is created since we are using those creds in the docker compose. 
+5. We will be using dockerize posgresql database for storing the data. We will persist the data into the data folder home directory, so we will need to create this data folder folder. 
+```
+mkdir -p ~/data/postgres
+```
+
+6. Once all packages are installed and necessary folder are created, you should start your dockerize postgresdb. Please ensure the `.env` is created since we are using those creds in the docker compose. 
 ```
 docker compose up -d 
 ```
 
-1. Now, you can ran the first flow which was to create all the required tables
+7. Now, you can ran the first flow which was to create all the required tables
 ```
-python run_flow.py
+python run_flow.py create-table
 ```
 
-1. Prefect come with the local server where you can monitor your flow activities in a pretty dashboard. You can start the server by using 
+8. Prefect come with the local server where you can monitor your flow activities in a pretty dashboard. You can start the server by using 
 ```
 prefect server start
 ```
+
 
 
 ### Public Data Sources
