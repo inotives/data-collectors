@@ -41,7 +41,7 @@ docker compose up -d
 
 7. Now, you can ran the first flow which was to create all the required tables
 ```
-python run_flow.py create-table
+python run_flow.py create-tables
 ```
 
 8. Prefect come with the local server where you can monitor your flow activities in a pretty dashboard. You can start the server by using 
@@ -50,17 +50,22 @@ prefect server start
 ```
 
 
+### DISCLAIMER
+All data provided here are downloaded from public APIs or community data sources. Therefore, I do not claim ownership of the data. I have included a few CSV data dumps downloaded from these sources to help initialize the database with proper data for further analysis and usage. Continuous data downloads from the APIs need to be run manually or scheduled using a scheduler. If you need additional data dumps, please visit the hosting sites; I have included the relevant links below.
+
 
 ### Public Data Sources
+#### Data Dump CSV - historical data 
 - [Coinmetrics CSV](https://coinmetrics.io/community-network-data/)
-- [Coingecko API](https://docs.coingecko.com/reference/introduction)
-- [Coinmarketcap](https://coinmarketcap.com/currencies/bitcoin/historical-data/)
+- [Kraken OHLC CSV](https://support.kraken.com/hc/en-us/articles/360047124832-Downloadable-historical-OHLCVT-Open-High-Low-Close-Volume-Trades-data)
+  
+### REST-API endpoints to download data 
 - [Open Exchange rate](https://docs.openexchangerates.org/reference/api-introduction)
 - [SGD current rates](https://www.sgrates.com/bankrate/dbs.html)
 - [Etherscan](https://docs.etherscan.io/) 
 - [Chainz Explorer](https://chainz.cryptoid.info/api.dws)
 - [Binance Exchange Public Data](https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#klinecandlestick-data)
 - [Kraken Public Data](https://docs.kraken.com/rest/#tag/Spot-Market-Data/operation/getOHLCData)
-- [Crypto.com Public Data](https://exchange-docs.crypto.com/exchange/v1/rest-ws/index.html#reference-and-market-data-api)
+- [Crypto.com Public Data](https://exchange-docs.crypto.com/exchange/v1/rest-ws/index.html?python#public-get-candlestick)
 - [Gemini Public Data](https://docs.gemini.com/rest-api/#symbols)
 - [Alpha Vantage Stock API](https://www.alphavantage.co/documentation/)

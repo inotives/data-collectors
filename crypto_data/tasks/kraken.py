@@ -4,6 +4,7 @@ import pathlib
 
 # custom package
 from utils.tools import generate_unique_key
+from crypto_data.api.kraken import API
 
 # global var
 
@@ -31,6 +32,7 @@ def load_ohlc_csv():
         data['source'] = source
         data['interval'] = interval
         data['trade_pair'] = trade_pair
+        data['vwap'] = None
         data['trade_date'] = pd.to_datetime(data['timestamp'], unit='s')
         data['trade_timestamp'] = data['trade_date'].dt.strftime('%Y-%m-%d %H:%M:%S')
         data['uniq_key'] = data.apply(lambda row: generate_unique_key(row['timestamp'], trade_pair, interval, source), axis=1)
@@ -41,3 +43,35 @@ def load_ohlc_csv():
     final_dataframe = pd.concat(final_data, ignore_index=True)
 
     return final_dataframe
+@task 
+def load_ohlc_api(pair, interval, since):
+    api = API()
+    columns = ['timestamp', 'open', 'high', 'low', 'close', 'vwap', 'volume', 'count']
+    source = 'kraken'
+
+    params = {
+        'pair': pair,
+        'interval': interval,
+        'since': since
+    }
+    data = api._get_pub_ohlc(params)
+
+    all_rows = []
+    for k, vals in data['result'].items():
+        if isinstance(vals, list):
+            for row in vals: 
+                all_rows.append(row)
+        else: 
+            ''' do nothing '''
+    
+    df = pd.DataFrame(all_rows, columns=columns)
+
+    # Data cleaning & formatting 
+    df['source'] = source
+    df['interval'] = interval
+    df['trade_pair'] = pair
+    df['trade_date'] = pd.to_datetime(df['timestamp'], unit='s')
+    df['trade_timestamp'] = df['trade_date'].dt.strftime('%Y-%m-%d %H:%M:%S')
+    df['uniq_key'] = df.apply(lambda row: generate_unique_key(row['timestamp'], pair, interval, source), axis=1)
+
+    return df 

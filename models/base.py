@@ -85,9 +85,6 @@ class SqlAlc(object):
         finally:
             session.close()
 
-
-
-
     def close(self):
         self.Session.remove()
         

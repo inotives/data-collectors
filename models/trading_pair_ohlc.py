@@ -20,4 +20,5 @@ class TradingOHLC(Base):
     close = Column(Numeric, nullable=True) # closing price in the time period
     volume = Column(Numeric, nullable=True) # total volume in the time period
     count = Column(Integer, nullable=True) # total trade count in the time period
+    vwap = Column(Numeric, nullable=True) # Volume Weightage Average Price in the time period
 
