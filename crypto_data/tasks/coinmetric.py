@@ -7,9 +7,6 @@ from sqlalchemy.exc import SQLAlchemyError
 # custom package/lib 
 from utils.tools import generate_unique_key
 
-# global VAR 
-from configs.settings import POSTGRES_DB_URL
-
 @task 
 def load_coinmetric_csv(): 
     root_path = pathlib.Path(__file__).parent.parent.parent.resolve()
@@ -44,6 +41,7 @@ def load_coinmetric_csv():
         data['asset_symbol'] = asset_symbol
         data['uniq_key'] = data.apply(lambda row: generate_unique_key(row['time'], asset_symbol), axis=1)
 
+        # Subset the table to only those columns that are required
         adjusted_df = data[col_needed]
 
         final_data.append(adjusted_df)

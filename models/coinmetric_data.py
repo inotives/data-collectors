@@ -4,7 +4,7 @@ from models.base import Base
 class CoinmetricDaily(Base):
     __tablename__ = 'coinmetric_daily'
     __table_args__ = (
-        CheckConstraint('char_length(asset_symbol) > 3', name='check_symbol_length'),
+        CheckConstraint('char_length(asset_symbol) >= 3', name='check_symbol_length'),
         {'extend_existing': True}
     )  
 

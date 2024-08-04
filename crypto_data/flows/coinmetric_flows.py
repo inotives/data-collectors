@@ -7,6 +7,6 @@ from models.coinmetric_data import CoinmetricDaily
 @flow 
 def ingest_coinmetric_csv(): 
     data = load_coinmetric_csv()
-    
-    insert_data2db(CoinmetricDaily,data)
- 
+    insert_data2db(CoinmetricDaily,data,['uniq_key'])
+    print('>>> Ingested all CSVs from Coinmetric Data dump!!')
+

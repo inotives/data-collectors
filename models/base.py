@@ -1,17 +1,26 @@
 import pandas as pd
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine, MetaData, sql
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
-
+from sqlalchemy.pool import QueuePool
 
 Base = declarative_base()
 metadata = MetaData()
 
 class SqlAlc(object):
     def __init__(self, db_url):
-        self.engine = create_engine(db_url)
+        self.engine = create_engine(
+            db_url,
+            poolclass=QueuePool,
+            pool_size=10,
+            max_overflow=20,
+            pool_timeout=30,  # wait for 30 seconds before giving up on getting a connection from the pool
+            connect_args={
+                "options": "-c statement_timeout=300000"  # 5 minutes
+            }
+        )
         self.Session = scoped_session(sessionmaker(bind=self.engine))
         Base.metadata.bind = self.engine
 
@@ -51,25 +60,23 @@ class SqlAlc(object):
         finally:
             session.close()
 
-    def upsert_data(self, table_class, data):
+    def upsert_data(self, table_class, df, conflict_columns, batch_size=500):
+        if df.empty:
+            return
+        
+        data_dicts = df.to_dict(orient='records')
+        
         session = self.Session()
         try:
-            # Check if data is a pandas DataFrame
-            if not isinstance(data, pd.DataFrame):
-                raise TypeError("The data provided is not a pandas DataFrame.")
-            
-            # Convert DataFrame to list of dictionaries for upsert
-            data_dicts = data.to_dict(orient='records')
-            
-            # Prepare upsert statement
-            insert_stmt = insert(table_class).values(data_dicts)
-            
-            # Define the conflict resolution (e.g., on primary key conflict)
-            upsert_stmt = insert_stmt.on_conflict_do_update(
-                index_elements=[table_class.__table__.primary_key.columns.values()],
-                set_={c.name: insert_stmt.excluded[c.name] for c in table_class.__table__.columns if c.name != 'id'}
-            )
-            session.execute(upsert_stmt)
+            for i in range(0, len(data_dicts), batch_size):
+                batch = data_dicts[i:i+batch_size]
+                stmt = insert(table_class).values(batch)
+                update_dict = {c.name: c for c in stmt.excluded if c.name not in conflict_columns}
+                on_conflict_stmt = stmt.on_conflict_do_update(
+                    index_elements=conflict_columns,
+                    set_=update_dict
+                )
+                session.execute(on_conflict_stmt)
             session.commit()
         except SQLAlchemyError as e:
             session.rollback()
@@ -77,6 +84,8 @@ class SqlAlc(object):
             raise
         finally:
             session.close()
+
+
 
 
     def close(self):
