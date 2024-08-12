@@ -13,6 +13,7 @@ class TradingOHLC(Base):
     trade_timestamp = Column(DateTime, nullable=False) # in timestamp
     source = Column(String, nullable=False) # source of data e.q: kraken, binance
     trade_pair = Column(String, nullable=False) # tradepair like XBTUSD, ETHUSD
+    asset = Column(String, nullable=True) # Base asset 
     interval = Column(String, nullable=False) # interval=[1,5,15,30,60,720,1440]
     open = Column(Numeric, nullable=True) # opening price in the time period
     high = Column(Numeric, nullable=True) # highest price in the time period

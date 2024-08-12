@@ -61,7 +61,7 @@ All data provided here are downloaded from public APIs or community data sources
   
 ### REST-API endpoints to download data 
 - [Open Exchange rate](https://docs.openexchangerates.org/reference/api-introduction)
-- [SGD current rates](https://www.sgrates.com/bankrate/dbs.html)
+
 - [Etherscan](https://docs.etherscan.io/) 
 - [Chainz Explorer](https://chainz.cryptoid.info/api.dws)
 - [Binance Exchange Public Data](https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#klinecandlestick-data)
@@ -69,3 +69,10 @@ All data provided here are downloaded from public APIs or community data sources
 - [Crypto.com Public Data](https://exchange-docs.crypto.com/exchange/v1/rest-ws/index.html?python#public-get-candlestick)
 - [Gemini Public Data](https://docs.gemini.com/rest-api/#symbols)
 - [Alpha Vantage Stock API](https://www.alphavantage.co/documentation/)
+
+### Others Infos Page (might need crawler to get the data)
+- [US Labour Statistic](https://www.bls.gov/news.release/empsit.a.htm)
+- [US Comsumer Price Index CPI](https://www.bls.gov/news.release/cpi.nr0.htm)
+- [US Producer Price Index PPI](https://www.bls.gov/news.release/ppi.nr0.htm)
+- [SGD current rates](https://www.sgrates.com/bankrate/dbs.html)
+- 
