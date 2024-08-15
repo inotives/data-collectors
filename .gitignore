@@ -27,6 +27,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.idea
+.idea/
 
 # Airflow Excludes e.q. Logs
 logs/

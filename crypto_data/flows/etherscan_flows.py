@@ -3,7 +3,6 @@ import pandas as pd
 
 from crypto_data.tasks.etherscan import get_pyusd_txes
 from crypto_data.tasks.db import insert_data2db
-
 from models.ethereum_token_txes import EthTokenTxes
 
 @flow

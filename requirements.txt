@@ -4,6 +4,7 @@ polars==1.2.1
 pandas==2.2.2
 SQLAlchemy==2.0.31
 beautifulsoup4==4.12.3
+scrapy==2.11.2
 lxml==5.2.2
 prefect==2.19.8
 matplotlib==3.9.1
