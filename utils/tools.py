@@ -38,4 +38,3 @@ def export_csv_to_data(data, filename):
     print(f">> Data exported to :: {exported_dir}")
 
     return 
-
