@@ -3,18 +3,18 @@ from datetime import datetime, timedelta
 
 # task
 from crypto_data.tasks.coinmetric import load_coinmetric_csv
-from crypto_data.tasks.db import insert_data2db 
+from utils.db import insert_data2db 
 from crypto_data.tasks.coinmetric import get_coinmetric_daily_api
 
 # models
 from models.coinmetric_data import CoinmetricDaily
 
-
 @flow 
 def ingest_coinmetric_csv(): 
     data = load_coinmetric_csv()
-    insert_data2db(CoinmetricDaily,data,['uniq_key'])
-    print('>>> Ingested all CSVs from Coinmetric Data dump!!')
+    status = insert_data2db(CoinmetricDaily,data,['uniq_key'])
+    print(f">>> Ingested all CSVs from Coinmetric Data dump!!. \n {status}")
+
 
 @flow
 def ingest_coinmetric_api(asset_symbol: str):
@@ -26,6 +26,6 @@ def ingest_coinmetric_api(asset_symbol: str):
     data = get_coinmetric_daily_api(asset_symbol, start_date, end_date)
 
     # Store the data into postgress
-    insert_data2db(CoinmetricDaily, data, ['uniq_key'])
+    status = insert_data2db(CoinmetricDaily, data, ['uniq_key'])
     
-    print('insert from API Success!!')
+    print(f"insert from API Success!! \n{status}")

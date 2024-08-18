@@ -43,9 +43,11 @@ class SqlAlc(object):
     def create_table(self, table_class):
         try:
             table_class.__table__.create(self.engine, checkfirst=True)
+            return {"status": "Success", "message": f"Table '{table_class.__tablename__}' created or already exists."}
+    
         except SQLAlchemyError as e:
             print(f"Error creating table: {e}")
-            raise
+            return {"status": "Failed", "error": str(e)}
 
 
     def insert_data(self, table_class, data):
@@ -62,26 +64,32 @@ class SqlAlc(object):
 
     def upsert_data(self, table_class, df, conflict_columns, batch_size=500):
         if df.empty:
-            return
+            return {'status': 'No data to upsert', "rows_upserted": 0}
         
         data_dicts = df.to_dict(orient='records')
-        
         session = self.Session()
+        rows_upserted = 0
+
         try:
             for i in range(0, len(data_dicts), batch_size):
-                batch = data_dicts[i:i+batch_size]
+                batch = data_dicts[i:i + batch_size]
                 stmt = insert(table_class).values(batch)
                 update_dict = {c.name: c for c in stmt.excluded if c.name not in conflict_columns}
                 on_conflict_stmt = stmt.on_conflict_do_update(
                     index_elements=conflict_columns,
                     set_=update_dict
                 )
-                session.execute(on_conflict_stmt)
+                result = session.execute(on_conflict_stmt)
+                rows_upserted += result.rowcount
+
             session.commit()
+            return {"status": "Success", "rows_upserted": rows_upserted}
+        
         except SQLAlchemyError as e:
             session.rollback()
             print(f"Error upserting data: {e}")
             raise
+
         finally:
             session.close()
 

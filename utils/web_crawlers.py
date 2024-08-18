@@ -5,81 +5,9 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from datetime import datetime, timedelta
 
-from utils.tools import export_csv_to_data
+from utils.tools import export_csv_to_data, generate_unique_key
 
-
-def cointelegraph_crawler():
-    # Define the URL
-    url = 'https://cointelegraph.com/'
-
-    # Set up the headers with a User-Agent
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
-
-    # Send a GET request to fetch the raw HTML content
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.content, 'html.parser')
-
-    # Define the current timestamp
-    current_time = datetime.now()
-
-    # Lists to store extracted data
-    titles = []
-    timestamps = []
-    posters = []
-    dates = []
-
-    # Find all article tags
-    articles = soup.find_all('article', class_='post-card__article')
-    
-    # Hourly timestamp
-    capture_at_hour = datetime.now().strftime('%Y-%m-%d %H:00:00')
-
-    # Extract data from each article
-    for article in articles:
-        title_tag = article.find('span', class_='post-card__title')
-        timestamp_tag = article.find('time', class_='text-uiSWeak')
-        poster_tag = article.find('a', class_='post-card__author-link')
-        
-        if title_tag and timestamp_tag and poster_tag:
-            title = title_tag.get_text(strip=True)
-            poster = poster_tag.get_text(strip=True)
-            date_attr = article.find('time')['datetime']
-            date = datetime.strptime(date_attr, '%Y-%m-%d')  # Extract the date from datetime attribute
-            
-            # Extract and convert the relative time
-            time_text = timestamp_tag.get_text(strip=True)
-            if 'minute' in time_text:
-                minutes = int(time_text.split()[0])
-                timestamp = current_time - timedelta(minutes=minutes)
-            elif 'hour' in time_text:
-                hours = int(time_text.split()[0])
-                timestamp = current_time - timedelta(hours=hours)
-            else:
-                timestamp = current_time  # Default to current time if unknown format
-
-            # Append data to lists
-            titles.append(title)
-            timestamps.append(timestamp)
-            posters.append(poster)
-            dates.append(date)
-
-    # Create a DataFrame from the extracted data
-    df = pd.DataFrame({
-        'Title': titles,
-        'Timestamp': timestamps,
-        'Poster': posters,
-        'Date': dates
-    })
-
-    export_csv_to_data(df, f"cointelegraph_news_{capture_at_hour}")
-
-
-def cointelegraph_market():
-    
-    #url = 'https://cointelegraph.com/tags/markets'
-    url = 'https://cointelegraph.com/tags/bitcoin'
+def crawl_site(url): 
     
     # Set up the headers with a User-Agent
     headers = {
@@ -90,9 +18,19 @@ def cointelegraph_market():
     response = requests.get(url, headers=headers)
     soup = BeautifulSoup(response.content, 'html.parser')
 
+    return soup
+
+
+def crawl_cointelegraph_tag(tag):
+    source_site = 'cointelegraph'
+    url = f"https://cointelegraph.com/tags/{tag}"
+    soup = crawl_site(url)
+
+    # Find article tags with its class
     articles = soup.find_all('article', class_='post-card-inline')
 
     # Lists to store extracted data
+    uniq_keys = []
     titles = []
     contents = []
     posters = []
@@ -107,7 +45,7 @@ def cointelegraph_market():
         content = article.find('p', class_='post-card-inline__text').get_text(strip=True)
         
         # Extract the author
-        author = article.find('p', class_='post-card-inline__author').get_text(strip=True).replace('by ', '')
+        author = article.find('p', class_='post-card-inline__author').get_text(strip=True).replace('by', '')
         
         # Extract the posted datetime
         art_date = article.find('time', class_='post-card-inline__date')['datetime']
@@ -115,27 +53,92 @@ def cointelegraph_market():
         # Extract the article URL
         article_url = article.find('a', class_='post-card-inline__title-link')['href']
         full_url = f"https://cointelegraph.com{article_url}"
+        
+        # Generate uniq key 
+        uniq_key = generate_unique_key(title, author)
 
+        # Append the result to lists
+        uniq_keys.append(uniq_key)
         titles.append(title)
         contents.append(content)
         posters.append(author)
         dates.append(art_date)
         links.append(full_url)
     
+    # Timestamp to check when these data was capture
+    capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
+
     # Create dataframe from the result 
     df = pd.DataFrame({
+        'uniq_key': uniq_keys,
         'title': titles,
-        'contents': contents,
-        'article': art_date,
+        'source': source_site,
+        'content': contents,
+        'article_date': art_date,
         'author': posters,
-        'link': links
+        'link': links,
+        'captured_at': capture_at
     })
 
-    print(df)
+    return df
 
-    capture_at_hour = datetime.now().strftime('%Y%m%d-%H')
+def crawl_cryptonews_tag(tag):
+    source_site = 'crypto.news'
+    url = f"https://crypto.news/tag/{tag}/"
+    soup = crawl_site(url)
 
-    export_csv_to_data(df, f"cointelegraph_bitcoin_{capture_at_hour}")
+    # Find article tags with its class
+    articles = soup.find_all('div', class_='post-loop__content')
 
+    # List to hold extracted article data
+    uniq_keys = []
+    titles = []
+    contents = []
+    posters = []
+    dates = []
+    links = []
 
-    
+    for article in articles:
+
+        # extract title 
+        title_tag = article.find('p', class_='post-loop__title').find('a')
+        title = title_tag.text.strip()
+
+        # Extract the link
+        link = title_tag['href']
+
+        # Extract the content/summary
+        content = article.find('div', class_='post-loop__summary').text.strip()
+
+        author = 'No Author'
+
+        # Extract the timestamp
+        timestamp_tag = article.find('time', class_='post-loop__date')
+        timestamp = datetime.fromisoformat(timestamp_tag['datetime'])
+
+        uniq_key = generate_unique_key(title)
+
+        # Append the result to lists
+        uniq_keys.append(uniq_key)
+        titles.append(title)
+        contents.append(content)
+        posters.append(author)
+        dates.append(timestamp.date())
+        links.append(link)
+        
+    # Timestamp to check when these data was capture
+    capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
+
+    # Create dataframe from the result 
+    df = pd.DataFrame({
+        'uniq_key': uniq_keys,
+        'title': titles,
+        'source': source_site,
+        'content': contents,
+        'article_date': dates,
+        'author': posters,
+        'link': links,
+        'captured_at': capture_at
+    })
+
+    return df
