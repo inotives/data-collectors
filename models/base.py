@@ -6,6 +6,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import QueuePool
 
+from utils.tools import export_csv_to_data
+
 Base = declarative_base()
 metadata = MetaData()
 
@@ -92,6 +94,36 @@ class SqlAlc(object):
 
         finally:
             session.close()
+    
+
+    def export_to_csv(self, table_class, filters=None, date_field=None, date_range=None, output_file='output'):
+        session = self.Session()
+        try:
+            # Build the query with optional filters
+            query = session.query(table_class)
+            if filters:
+                for field, value in filters.items():
+                    query = query.filter(getattr(table_class, field) == value)
+
+            if date_range and date_field:
+                start_date, end_date = date_range
+                query = query.filter(getattr(table_class, date_field).between(start_date, end_date))
+
+            # Convert the query to a DataFrame
+            df = pd.read_sql(query.statement, self.engine)
+            
+            # Export to CSV
+            export_csv_to_data(data=df, filename=output_file)
+
+            return {"status": "Success", "message": f"Data exported to {output_file}"}
+        
+        except SQLAlchemyError as e:
+            print(f"Error exporting data: {e}")
+            return {"status": "Failed", "error": str(e)}
+        
+        finally:
+            session.close()
+
 
     def close(self):
         self.Session.remove()

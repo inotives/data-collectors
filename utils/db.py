@@ -29,6 +29,20 @@ def insert_data2db(table_class, data, conflicts):
 
     conn.close()
 
+@task
+def export_data2csv(table_class, output_file='output', filters=None, date_field=None, date_range=None):
+    conn = SqlAlc(POSTGRES_DB_URL)
+
+    status = conn.export_to_csv(
+        table_class, 
+        output_file=output_file, 
+        filters=filters,
+        date_range=date_range,
+        date_field=date_field
+    )
+
+    return status
+
      
 ''' -- FLOWS ------------------------------------------------------------- '''
 @flow
