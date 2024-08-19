@@ -14,4 +14,5 @@ class NewsArticles(Base):
     link = Column(Text)
     article_date = Column(Date)
     author = Column(String)
+    tag = Column(String)
     captured_at = Column(DateTime)
