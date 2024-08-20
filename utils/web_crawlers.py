@@ -211,17 +211,79 @@ def crawl_investing_com(tag):
     print(f">>>> Complete Crawling Tag: {tag}, Return Result: {len(df)} Articles")
     return df
 
+
+def crawl_utoday(tag):
+    source = 'u.today'
+    capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
+
+    url = f"https://u.today/{tag}"
+    soup = crawl_site(url)
+
+    # Find article tags with its class
+    articles = soup.find_all('div', class_='news__item')
+
+    fields = articles_fields()
+    
+    for article in articles:
+        # Extract the post date
+        # Extract and convert the post date to a date object
+        post_date_str = article.find('div', class_='humble').get_text(strip=True)
+        post_date = datetime.strptime(post_date_str.split('-')[0].strip(), '%b %d, %Y').date()
+
+        # Extract the title
+        title = article.find('div', class_='news__item-title').get_text(strip=True)
+
+        # Extract the content (since the content isn't explicitly provided, we will skip it)
+        content = ''
+
+        # Extract the author
+        author = article.find('a', class_='humble--author').get_text(strip=True)
+
+        # Extract the link
+        link = article.find('a', class_='news__item-body')['href']
+        full_link = f"https://u.today{link}" if not link.startswith('http') else link
+
+        uniq_key = generate_unique_key(title, source)
+
+        fields['uniq_keys'].append(uniq_key)
+        fields['titles'].append(title)
+        fields['contents'].append(content)
+        fields['authors'].append(author)
+        fields['dates'].append(post_date)
+        fields['links'].append(full_link)
+    
+    df = pd.DataFrame({
+        'uniq_key': fields['uniq_keys'],
+        'title': fields['titles'],
+        'source': source,
+        'content': fields['contents'],
+        'article_date': fields['dates'],
+        'author': fields['authors'],
+        'link': fields['links'],
+        'tag': tag,
+        'captured_at': capture_at
+    })
+
+    time.sleep(2) # sleep for 2 sec. to avoid been too agresive call to the site. 
+    print(f">>>> Complete Crawling Tag: {tag}, Return Result: {len(df)} Articles")
+
+    return df 
+
+
+
 def crawl_test():
     source = 'investing.com'
     capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
 
-    url = f"https://www.investing.com/news/cryptocurrency-news"
+    url = f"https://u.today/bitcoin-news"
     soup = crawl_site(url)
 
     # Find article tags with its class
-    articles = soup.find_all('article', class_='news-analysis-v2_article__wW0pT')
+    articles = soup.find_all('div', class_='news__item')
 
     fields = articles_fields()
-
+    
     for article in articles:
         print(article)
+        print('=====================')
+    print(len(articles))

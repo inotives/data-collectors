@@ -1,7 +1,7 @@
 import time
 from prefect import flow 
 
-from news_data_collectors.tasks.crawlers import crawl_cointelegraph, crawl_cryptonews, crawl_investingcom_news
+from news_data_collectors.tasks.crawlers import crawl_cointelegraph, crawl_cryptonews, crawl_investingcom_news, crawl_utoday_news
 from models.news_articles import NewsArticles
 from utils.db import insert_data2db
 
@@ -31,7 +31,12 @@ def crawl_news():
     print(f">> All News Articles inserted. \n>> {status_3}")
     time.sleep(2)
 
-
+    print("Start Crawlers for u.today ...")
+    df_utoday = crawl_utoday_news()
+    print('>> Storing U.Today News to DB')
+    status_4 = insert_data2db(NewsArticles, df_utoday, ['uniq_key'])
+    print(f">> All News Articles inserted. \n>> {status_4}")
+    time.sleep(2)
 
 
 
