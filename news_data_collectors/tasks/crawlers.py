@@ -1,17 +1,17 @@
 from prefect import task
 import pandas as pd
 
-from utils.web_crawlers import crawl_cointelegraph_tag, crawl_cryptonews_tag, crawl_investing_com, crawl_utoday
+import utils.web_crawlers as wc
 
 @task
 def crawl_cointelegraph():
     
     tags = ['market', 'bitcoin', 'ethereum', 'altcoin', 'blockchain', 
-            'business', 'regulation','ai','nft', 'defi']
+            'business', 'regulation','ai','nft', 'defi', 'research-articles']
     print('>>> Crawling Tags:', tags)
     news_list = []
     for tag in tags: 
-        news_articles = crawl_cointelegraph_tag(tag)
+        news_articles = wc.crawl_cointelegraph_tag(tag)
         news_list.append(news_articles)
 
     all_news_df = pd.concat(news_list, ignore_index=True).drop_duplicates(subset=['uniq_key'], keep='first')
@@ -25,7 +25,7 @@ def crawl_cryptonews():
     print('>>> Crawling Tags:', tags)
     news_list = []
     for tag in tags:
-        news_articles = crawl_cryptonews_tag(tag)
+        news_articles = wc.crawl_cryptonews_tag(tag)
         news_list.append(news_articles)
     
     all_news_df = pd.concat(news_list, ignore_index=True).drop_duplicates(subset=['uniq_key'], keep='first')
@@ -40,7 +40,7 @@ def crawl_investingcom_news():
     print('>>> Crawling Tags:', tags)
     news_list = []
     for tag in tags: 
-        news_articles = crawl_investing_com(tag)
+        news_articles = wc.crawl_investing_com(tag)
         news_list.append(news_articles)
     
     all_news_df = pd.concat(news_list, ignore_index=True).drop_duplicates(subset=['uniq_key'], keep='first')
@@ -55,9 +55,16 @@ def crawl_utoday_news():
     print('>>> Crawling Tags:', tags)
     news_list = []
     for tag in tags: 
-        news_articles = crawl_utoday(tag)
+        news_articles = wc.crawl_utoday(tag)
         news_list.append(news_articles)
     
     all_news_df = pd.concat(news_list, ignore_index=True).drop_duplicates(subset=['uniq_key'], keep='first')
 
     return all_news_df    
+
+@task
+def crawl_unchainedcrypto_news():
+    print(">>> Start Scraping Latest News from Unchained Crypto")
+    all_news_df = wc.crawl_unchainedcrypto()
+
+    return all_news_df

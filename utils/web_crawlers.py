@@ -1,6 +1,6 @@
 import requests
 import time
-from requests_html import HTMLSession
+import re
 
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -270,16 +270,75 @@ def crawl_utoday(tag):
     return df 
 
 
-
-def crawl_test():
-    source = 'investing.com'
+def crawl_unchainedcrypto(tag=None):
+    source = 'unchainedcrypto'
     capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
 
-    url = f"https://u.today/bitcoin-news"
+    url = f"https://unchainedcrypto.com/news/" # crawl the latest news
     soup = crawl_site(url)
 
     # Find article tags with its class
-    articles = soup.find_all('div', class_='news__item')
+    articles = soup.find_all('div', class_='group-day')
+
+    fields = articles_fields()
+    fields['tags'] = []
+    
+    for article in articles:
+
+        tag = article.find('p', class_='cat-group').text.strip()
+        # Extract the post link from the <a> tag inside <div class="archive-item">
+        post_link = article.find('a')['href']
+        
+        # Extract the title from the <h3> tag inside <div class="title">
+        title = article.find('h3').text.strip()
+
+        # Extract the content from the <p> tag inside <div class="post-teaser">
+        content = article.find('div', class_='post-teaser').find('p').text.strip()
+
+        # Extract the post date from the <div class="episode"> and convert it to a date object
+        post_date_str = article.find('div', class_='episode').text.strip()
+        post_date = datetime.strptime(post_date_str, '%B %d, %Y').date()
+
+        # Author is not explicitly provided in the structure, so set it to None
+        author = ''
+        
+        uniq_key = generate_unique_key(title, source)
+
+        fields['uniq_keys'].append(uniq_key)
+        fields['titles'].append(title)
+        fields['contents'].append(content)
+        fields['authors'].append(author)
+        fields['dates'].append(post_date)
+        fields['links'].append(post_link)
+        fields['tags'].append(tag)
+    
+    df = pd.DataFrame({
+        'uniq_key': fields['uniq_keys'],
+        'title': fields['titles'],
+        'source': source,
+        'content': fields['contents'],
+        'article_date': fields['dates'],
+        'author': fields['authors'],
+        'link': fields['links'],
+        'tag': fields['tags'],
+        'captured_at': capture_at
+    })
+
+    time.sleep(2) # sleep for 2 sec. to avoid been too agresive call to the site. 
+    print(f">>>> Complete Crawling Tag: Latest News, Return Result: {len(df)} Articles")
+
+    return df
+
+
+def crawl_test():
+    source = 'coinmarketcap'
+    capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
+
+    url = f"https://coinmarketcap.com/community/articles/browse/?sort=-publishedOn"
+    soup = crawl_site(url)
+
+    # Find article tags with its class
+    articles = soup.find_all('div')
 
     fields = articles_fields()
     
