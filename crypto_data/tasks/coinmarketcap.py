@@ -20,33 +20,21 @@ def load_ohlc_csv():
     final_data = []
 
     for file in csv_files:
-        asset = str(file).split("_")[0]
-        trade_pair = ''
-        interval = 1440
-
-        # load data 
-        column_names = ['timestamp','open','high','low','close','volume','count']
-        data = pd.read_csv(file)
+        asset = str(file).split("/")[-1].split('_')[0]
+        data = pd.read_csv(file, sep=';', parse_dates=['timeOpen', 'timeClose', 'timeHigh', 'timeLow', 'timestamp'])
+        data = data.rename(columns={'timeOpen': 'metric_date', 'marketCap': 'market_cap'})
+        data['crypto'] = asset
+        data['uniq_key'] = data.apply(lambda row: generate_unique_key(row['crypto'], row['metric_date']), axis=1)
+        ohlcv = data[['uniq_key', 'metric_date', 'crypto' ,'open', 'high', 'low', 'close', 'volume', 'market_cap']].sort_values('metric_date').drop_duplicates(subset=['metric_date']).reset_index(drop=True)
         
         
-        # # Data clean up: adding columns and column calculation as per needed
-        # # Rename the 'trades' column to 'count'
-        # # data.rename(columns={'trades': 'count'}, inplace=True)
-        # data['source'] = source
-        # data['interval'] = 1440
-        # data['trade_pair'] = ''
-        # data['asset'] = asset
-        # data['vwap'] = None
-        # data['trade_date'] = pd.to_datetime(data['timestamp'], unit='s')
-        # data['trade_timestamp'] = data['trade_date'].dt.strftime('%Y-%m-%d %H:%M:%S')
-        # data['uniq_key'] = data.apply(lambda row: generate_unique_key(row['timeOpen'], trade_pair, interval, source, asset), axis=1)
-
-        final_data.append(data)
+        final_data.append(ohlcv)
     
     # Concatenate all DataFrames into a single DataFrame
     final_dataframe = pd.concat(final_data, ignore_index=True)
 
     return final_dataframe
+
 @task 
 def load_ohlc_api(pair, interval, since):
     api = API()

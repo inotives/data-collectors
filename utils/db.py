@@ -9,6 +9,7 @@ from models.trading_pair_ohlc import TradingOHLC
 from models.coinmetric_data import CoinmetricDaily
 from models.ethereum_token_txes import EthTokenTxes
 from models.news_articles import NewsArticles
+from models.cmc_ohlcv import CMCOHLCV
 
 ''' -- TASKS ------------------------------------------------------------- '''
 @task 
@@ -51,4 +52,5 @@ def init_db():
     create_table(CoinmetricDaily)
     create_table(EthTokenTxes)
     create_table(NewsArticles)
+    create_table(CMCOHLCV)
     print(">>> All tables successfully created!!")

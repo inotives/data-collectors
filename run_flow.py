@@ -5,6 +5,7 @@ from utils.db import init_db
 from crypto_data.flows.kraken_flows import ingest_ohlc_csv, ingest_ohlc_api
 from crypto_data.flows.coinmetric_flows import ingest_coinmetric_csv, ingest_coinmetric_api
 from crypto_data.flows.etherscan_flows import ingest_etherscan_pyusd_txes
+from crypto_data.flows.coinmarketcap_flows import ingest_ohlcv_cmc
 from news_data_collectors.flows.crawler_flows import crawl_news
 
 '''
@@ -21,6 +22,8 @@ if __name__ == '__main__':
         ingest_ohlc_csv()
     elif(flow=='ingest-coinmetric'):
         ingest_coinmetric_csv()
+    elif(flow=='ingest-cmc'):
+        ingest_ohlcv_cmc()
     elif(flow=='cm-api'):
         ingest_coinmetric_api('btc,eth,cro,ada,uni,link,matic_eth')
     elif(flow=='kr-api'):
