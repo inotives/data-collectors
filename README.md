@@ -75,4 +75,3 @@ All data provided here are downloaded from public APIs or community data sources
 - [US Comsumer Price Index CPI](https://www.bls.gov/news.release/cpi.nr0.htm)
 - [US Producer Price Index PPI](https://www.bls.gov/news.release/ppi.nr0.htm)
 - [SGD current rates](https://www.sgrates.com/bankrate/dbs.html)
-- 

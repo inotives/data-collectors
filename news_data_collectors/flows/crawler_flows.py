@@ -38,12 +38,12 @@ def crawl_news():
     print(f">> All News Articles inserted. \n>> {status_4}")
     time.sleep(2)
 
-    print("Start Crawlers for Unchained Crypto ...")
-    df_utoday = cr_task.crawl_unchainedcrypto_news()
-    print('>> Storing Unchained Crypto News to DB')
-    status_5 = insert_data2db(NewsArticles, df_utoday, ['uniq_key'])
-    print(f">> All News Articles inserted. \n>> {status_5}")
-    time.sleep(2)
+    # print("Start Crawlers for Unchained Crypto ...")
+    # df_utoday = cr_task.crawl_unchainedcrypto_news()
+    # print('>> Storing Unchained Crypto News to DB')
+    # status_5 = insert_data2db(NewsArticles, df_utoday, ['uniq_key'])
+    # print(f">> All News Articles inserted. \n>> {status_5}")
+    # time.sleep(2)
 
 
 
