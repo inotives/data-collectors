@@ -3,16 +3,20 @@ import pandas as pd
 
 from crypto_data.api.etherscan import EtherscanApi 
 from utils.tools import generate_unique_key
+from utils.db import etherscan_tokentx_get_latest_blocknum
 
 @task 
-def get_pyusd_txes():
+def get_etherscan_token_txes(contr_addr, asset):
 
-    pyusd_contr_addr = '0x6c3ea9036406852006290770BEdFcAbA0e23A0e8'
+    latest_blocknum = etherscan_tokentx_get_latest_blocknum(asset=asset)
+    block_num = latest_blocknum if latest_blocknum else 0
+    print(f">>>> Starting BlockNum: {block_num}")
 
     api = EtherscanApi()
-    data = api._get_erc20_txes(contract_addr=pyusd_contr_addr)
+    data = api._get_erc20_txes(contract_addr=contr_addr, startb=block_num)
     
     data_df = pd.DataFrame(data['result'])
+    print(f">>>> Total txes pulled: {len(data_df)}")
 
     # column_mapping: change the column names to match the db
     cols = {
@@ -40,6 +44,6 @@ def get_pyusd_txes():
     data_df['transaction_timestamp'] = data_df['transaction_date'].dt.strftime('%Y-%m-%d %H:%M:%S')
     data_df['uniq_key'] = data_df.apply(lambda row: generate_unique_key(row['timestamp'], row['token_symbol'], row['transaction_hash'], row['from_addr'], row['to_addr'], row['transaction_value']), axis=1)
 
-    print(data_df.info())
+    # print(data_df.info())
 
     return data_df

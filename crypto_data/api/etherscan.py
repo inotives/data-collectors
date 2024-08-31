@@ -31,7 +31,7 @@ class EtherscanApi():
 
         return self.response.json(**self._json_options)
     
-    def _get_erc20_txes(self, contract_addr=None, address=None, sort_order='desc', startb=0, endb=99999999):
+    def _get_erc20_txes(self, contract_addr=None, address=None, sort_order='asc', startb=0, endb=99999999):
         params = {
             'module': 'account',
             'action': 'tokentx',

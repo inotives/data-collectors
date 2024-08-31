@@ -21,6 +21,25 @@ def crawl_site(url):
 
     return soup
 
+def crawl_site_html_text(url):
+
+    # Set up the headers with a User-Agent
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+
+    # Send a GET request to fetch the raw HTML content
+    response = requests.get(url, headers=headers)
+
+    if not response.ok:
+        print('Status code:', response.status_code)
+        raise Exception('Failed to load page {}'.format(url))
+
+    page_content = response.text
+    soup = BeautifulSoup(page_content, 'html.parser')
+
+    return soup
+
 def articles_fields():
     return {
         'uniq_keys': [],
@@ -334,13 +353,11 @@ def crawl_test():
     source = 'coinmarketcap'
     capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
 
-    url = f"https://coinmarketcap.com/community/articles/browse/?sort=-publishedOn"
-    soup = crawl_site(url)
+    url = f"https://sg.finance.yahoo.com/crypto/"
+    soup = crawl_site_html_text(url)
 
     # Find article tags with its class
-    articles = soup.find_all('div')
-
-    fields = articles_fields()
+    articles = soup.find_all('div', {'class': "Ov(h)"})
     
     for article in articles:
         print(article)

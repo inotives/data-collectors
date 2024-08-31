@@ -5,6 +5,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import QueuePool
+from sqlalchemy import text
 
 from utils.tools import export_csv_to_data
 
@@ -29,8 +30,9 @@ class SqlAlc(object):
 
     def execute_query(self, query, params=None):
         session = self.Session()
+        query_text = text(query)
         try:
-            result = session.execute(query, params)
+            result = session.execute(query_text, params)
             session.commit()
             if result.returns_rows:
                 return result.fetchall()
