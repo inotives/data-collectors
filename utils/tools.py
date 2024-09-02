@@ -79,6 +79,20 @@ def export_csv_to_data(data, filename):
 
     return 
 
+def generate_date_list(start_date, end_date):
+    """Generating list of daily date from start date to end date"""
+    # Convert string dates to datetime objects
+    start = datetime.strptime(start_date, "%Y-%m-%d")
+    end = datetime.strptime(end_date, "%Y-%m-%d")
+
+    # Generate the list of dates
+    date_list = []
+    current_date = start
+    while current_date <= end:
+        date_list.append(current_date.strftime("%Y-%m-%d"))
+        current_date += timedelta(days=1)
+    
+    return date_list
 
 def process_json_str(json_str):
     """convert json string to dataframe """

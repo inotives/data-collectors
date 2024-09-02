@@ -34,13 +34,9 @@ if __name__ == '__main__':
     elif(flow=='kr-api'):
         ingest_ohlc_api()
     elif(flow=='tokentx'):
-        if(extra[0] == 'hist'):
-            contr='0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48'
-            token='USDC'
-            cnt=int(extra[1])
-            eth.ingest_etherscan_txes_historical(contr_addr=contr, tk_symbol=token, loop_cnt=cnt)
-        else:    
-            eth.ingest_etherscan_txes_latest()
+        eth.ingest_etherscan_txes_latest()
+        # eth.ingest_etherscan_txes_historical(contr_addr=contr, tk_symbol=token, loop_cnt=cnt)
+        
     elif(flow=='crawl'):
         crawl_news()
     else: 

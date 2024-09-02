@@ -349,15 +349,71 @@ def crawl_unchainedcrypto(tag=None):
     return df
 
 
+def crawl_sgrates(currency_date, source_bank='dbs'):
+    url = f"https://www.sgrates.com/bankrate/{source_bank}.html?date={currency_date}"
+    
+    soup = crawl_site_html_text(url)
+    table = soup.find('table')
+
+    # Initialize lists to store the data
+    currencies = []
+    bank_buy_tt = []
+    bank_sell_tt = []
+    bank_buy_od = []
+    bank_sell_od = []
+    uniq_keys = []
+
+    # Loop through each row in the table, excluding the header
+    for row in table.find_all('tr')[1:]:
+        cols = row.find_all('td')
+        currency = cols[0].text.strip()
+        uniq_key = generate_unique_key(currency_date, currency, source_bank)
+
+        # Function to safely convert to float or return None
+        def safe_float(value):
+            try:
+                return float(value)
+            except ValueError:
+                return None
+
+        # Convert to float, replace '--' with None and coerce to NaN
+        buy_tt = safe_float(cols[1].text.strip())
+        sell_tt = safe_float(cols[2].text.strip())
+        buy_od = safe_float(cols[3].text.strip())
+        sell_od = safe_float(cols[4].text.strip())
+
+        # Append the data to the lists
+        uniq_keys.append(uniq_key)
+        currencies.append(currency)
+        bank_buy_tt.append(buy_tt)
+        bank_sell_tt.append(sell_tt)
+        bank_buy_od.append(buy_od)
+        bank_sell_od.append(sell_od)
+
+    # Create a DataFrame
+    df = pd.DataFrame({
+        'uniq_key': uniq_keys,
+        'tx_date': currency_date,
+        'source_bank': source_bank,
+        'currency': currencies,
+        'bank_buy_tt': bank_buy_tt,
+        'bank_sell_tt': bank_sell_tt,
+        'bank_buy_od': bank_buy_od,
+        'bank_sell_od': bank_sell_od
+    })
+
+    return df
+
+
 def crawl_test():
     source = 'coinmarketcap'
     capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
 
-    url = f"https://sg.finance.yahoo.com/crypto/"
+    url = f"https://www.sgrates.com/bankrate/dbs.html?date=2024-09-01"
     soup = crawl_site_html_text(url)
 
     # Find article tags with its class
-    articles = soup.find_all('div', {'class': "Ov(h)"})
+    articles = soup.find_all('table')
     
     for article in articles:
         print(article)

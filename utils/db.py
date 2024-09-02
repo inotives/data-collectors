@@ -10,6 +10,7 @@ from models.coinmetric_data import CoinmetricDaily
 from models.ethereum_token_txes import EthTokenTxes
 from models.news_articles import NewsArticles
 from models.cmc_ohlcv import CMCOHLCV
+from models.fiat_sgd_rates import FiatSGDRates
 
 ''' -- TASKS ------------------------------------------------------------- '''
 @task 
@@ -53,11 +54,13 @@ def init_db():
     create_table(EthTokenTxes)
     create_table(NewsArticles)
     create_table(CMCOHLCV)
+    create_table(FiatSGDRates)
     print(">>> All tables successfully created!!")
 
 
-"""-- DB functions -------------------------------------------------------- """
+""" -- DB functions -------------------------------------------------------- """
 def etherscan_tokentx_get_latest_blocknum(asset=None):
+    """get etherscan token tx latest block num"""
     conn = SqlAlc(POSTGRES_DB_URL)
 
     where_clause = f"WHERE ett.token_symbol = '{asset}'" if asset else ''
