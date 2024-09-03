@@ -7,7 +7,7 @@ import utils.tools as tool
 
 
 @task
-def crawl_sgrates_sites(start_date, end_date, bank):
+def crawl_sgrates_sites(start_date, end_date, bank='dbs', loop_gap=2):
     
     datestrs = tool.generate_date_list(start_date, end_date)
     data_list = []
@@ -15,7 +15,7 @@ def crawl_sgrates_sites(start_date, end_date, bank):
         df = crw.crawl_sgrates(d, bank)
         data_list.append(df)
         print(f"---> Crawling:{bank}, date:{d}")
-        time.sleep(2)
+        time.sleep(loop_gap)
     
     final_df = pd.concat(data_list, ignore_index=True)
     
