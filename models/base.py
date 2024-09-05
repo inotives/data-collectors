@@ -45,6 +45,7 @@ class SqlAlc(object):
 
     
     def create_table(self, table_class):
+        '''Create table in db'''
         try:
             table_class.__table__.create(self.engine, checkfirst=True)
             return {"status": "Success", "message": f"Table '{table_class.__tablename__}' created or already exists."}
@@ -55,6 +56,7 @@ class SqlAlc(object):
 
 
     def insert_data(self, table_class, data):
+        '''Insert data to db row'''
         session = self.Session()
         try:
             session.bulk_insert_mappings(table_class, data)
@@ -67,6 +69,8 @@ class SqlAlc(object):
             session.close()
 
     def upsert_data(self, table_class, df, conflict_columns, batch_size=500):
+        '''Insert data base on conflicting column. '''
+
         if df.empty:
             return {'status': 'No data to upsert', "rows_upserted": 0}
         
@@ -89,6 +93,46 @@ class SqlAlc(object):
             session.commit()
             return {"status": "Success", "rows_upserted": rows_upserted}
         
+        except SQLAlchemyError as e:
+            session.rollback()
+            print(f"Error upserting data: {e}")
+            raise
+
+        finally:
+            session.close()
+    
+    def update_col_data(self, table_class, df, conflict_columns, update_columns, batch_size=500):
+        ''' update the row to db base on column key '''
+
+        if df.empty:
+            return {'status': 'No data to update', "rows_updated": 0}
+        
+        data_dicts = df.to_dict(orient='records')
+        session = self.Session()
+        rows_upserted = 0
+
+        try:
+            for i in range(0, len(data_dicts), batch_size):
+                batch = data_dicts[i:i + batch_size]
+                stmt = insert(table_class).values(batch)
+                
+                # Prepare the update dictionary only for the columns you want to update, e.g., 'full_content'
+                update_dict = {col: getattr(stmt.excluded, col) for col in update_columns}
+                
+                # Create the upsert (insert + update on conflict) statement
+                on_conflict_stmt = stmt.on_conflict_do_update(
+                    index_elements=conflict_columns,  # The columns to check for conflicts
+                    set_=update_dict  # Only update 'full_content' when a conflict occurs
+                )
+                
+                # Execute the upsert query
+                result = session.execute(on_conflict_stmt)
+                rows_upserted += result.rowcount
+
+            # Commit the transaction
+            session.commit()
+            return {"status": "Success", "rows_upserted": rows_upserted}
+
         except SQLAlchemyError as e:
             session.rollback()
             print(f"Error upserting data: {e}")

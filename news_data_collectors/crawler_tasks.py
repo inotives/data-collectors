@@ -68,3 +68,12 @@ def crawl_unchainedcrypto_news():
     all_news_df = wc.crawl_unchainedcrypto()
 
     return all_news_df
+
+@task
+def get_article_details(article_df):
+
+    article_df['full_content'] = article_df['link'].apply(wc.crawl_article_details)
+
+    return article_df
+    # wc.crawl_article_details(article_url)
+

@@ -350,6 +350,7 @@ def crawl_unchainedcrypto(tag=None):
 
 
 def crawl_sgrates(currency_date, source_bank='dbs'):
+    """ Crawl the SGD rates of singapore Banks"""
     url = f"https://www.sgrates.com/bankrate/{source_bank}.html?date={currency_date}"
     
     soup = crawl_site_html_text(url)
@@ -404,18 +405,49 @@ def crawl_sgrates(currency_date, source_bank='dbs'):
 
     return df
 
-
-def crawl_test():
-    source = 'coinmarketcap'
-    capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
-
-    url = f"https://www.sgrates.com/bankrate/dbs.html?date=2024-09-01"
+def crawl_article_details(url):
+    '''Scrap the article details '''
+    
     soup = crawl_site_html_text(url)
 
     # Find article tags with its class
-    articles = soup.find_all('table')
+    articles_text = soup.find_all("p")
+    full_text = ''
+
+    if articles_text:
+        # Find all paragraphs within the article
+        paragraphs = articles_text
+        # Collect all the paragraph texts
+        full_text = "\n".join([p.get_text() for p in paragraphs])
+        
+    else:
+        print("Article content not found.")
     
-    for article in articles:
-        print(article)
-        print('=====================')
-    print(len(articles))
+    time.sleep(1)
+
+    return full_text
+
+
+def crawl_test():
+    source = 'cointelegraph'
+    capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
+
+    url = f"https://u.today/crypto-market-bloodbath-explanation-provided-by-jim-cramer"
+    soup = crawl_site_html_text(url)
+
+    # Find article tags with its class
+    articles_text = soup.find_all("p")
+    full_text = ''
+
+    if articles_text:
+        # Find all paragraphs within the article
+        paragraphs = articles_text
+        # Collect all the paragraph texts
+        full_text = " ".join([p.get_text() for p in paragraphs])
+        
+        # Print the concatenated text
+        print(full_text)
+    else:
+        print("Article content not found.")
+
+    return full_text

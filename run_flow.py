@@ -6,7 +6,7 @@ from crypto_data.flows.kraken_flows import ingest_ohlc_csv, ingest_ohlc_api
 from crypto_data.flows.coinmetric_flows import ingest_coinmetric_csv, ingest_coinmetric_api
 import crypto_data.flows.etherscan_flows as eth
 from crypto_data.flows.coinmarketcap_flows import ingest_ohlcv_cmc
-from news_data_collectors.flows.crawler_flows import crawl_news
+from news_data_collectors.crawler_flows import crawl_news, crawl_article_detail
 from currency_data_collectors.flows import scrap_sgrate_currency_data
 
 '''
@@ -43,6 +43,8 @@ if __name__ == '__main__':
         scrap_sgrate_currency_data(start, end)
     elif(flow=='crawl'):
         crawl_news()
+    elif(flow=='crawl-detail'):
+        crawl_article_detail(20)
     else: 
         print('NOT a FLOW!!')
 

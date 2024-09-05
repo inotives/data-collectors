@@ -1,4 +1,6 @@
 from prefect import task, flow
+import pandas as pd
+from sqlalchemy import create_engine
 
 # custom
 from configs.settings import POSTGRES_DB_URL
@@ -26,9 +28,18 @@ def create_table(table_class):
 def insert_data2db(table_class, data, conflicts): 
     conn = SqlAlc(POSTGRES_DB_URL)
     
-    status = conn.upsert_data(table_class, data, conflicts)
+    status = conn.update_col_data(table_class, data, conflicts)
     print(status)
 
+    conn.close()
+
+@task
+def upsert_data2db(table_class, data, conflicts, col2update):
+    conn = SqlAlc(POSTGRES_DB_URL)
+
+    status = conn.update_col_data(table_class, data, conflicts, col2update)
+    print(status)
+    
     conn.close()
 
 @task
@@ -71,4 +82,24 @@ def etherscan_tokentx_get_latest_blocknum(asset=None):
     latest_block = conn.execute_query(query)
 
     return latest_block[0][0]
+
+def news_article_get_latest_link(rows=10):
+    """get latest news article link in db """
+    engine = create_engine(POSTGRES_DB_URL)
+
+    query = f"""
+    SELECT na.uniq_key, na.link, na.full_content 
+    FROM news_articles na 
+    WHERE na.full_content IS NULL
+    ORDER BY na.article_date ASC
+    LIMIT {rows};
+    """
+
+    with engine.connect() as conn:
+        df = pd.read_sql(query, conn)
+
+    return df 
+    
+
+
 
