@@ -349,6 +349,77 @@ def crawl_unchainedcrypto(tag=None):
     return df
 
 
+def crawl_techcrunch(category, page=None):
+    source = 'techcrunch'
+    capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
+
+    url = f"https://techcrunch.com/category/{category}/"
+    if page: 
+        url = f"https://techcrunch.com/category/{category}/page/{page}/"
+
+    soup = crawl_site_html_text(url)  # Your function to retrieve HTML content
+
+    # Find article tags with the specific class
+    articles = soup.find_all('div', class_='wp-block-tc23-post-picker')
+
+
+    fields = articles_fields()
+    fields['tags'] = []
+    
+    # Loop through each article
+    for article in articles:
+        # Extracting the article URL and title
+        title_tag = article.find('h2', class_='wp-block-post-title')
+        title = title_tag.get_text(strip=True) if title_tag else None
+        article_url = title_tag.find('a')['href'] if title_tag else None
+
+        # Extracting article date
+        time_tag = article.find('time', class_='wp-block-tc23-post-time-ago')
+        if time_tag:
+            article_datetime = time_tag['datetime']
+            article_date = article_datetime.split('T')[0]  # Keep only the date (YYYY-MM-DD)
+        else:
+            article_date = None
+
+
+        # Extracting content (excerpt)
+        content_tag = article.find('p', class_='wp-block-post-excerpt__excerpt')
+        content = content_tag.get_text(strip=True) if content_tag else None
+
+        # Extracting tags (e.g., "Crypto")
+        tags_tag = article.find('a', class_='is-taxonomy-category')
+        tags = tags_tag.get_text(strip=True) if tags_tag else None
+
+        author = ''
+
+        uniq_key = generate_unique_key(title, source)
+
+        fields['uniq_keys'].append(uniq_key)
+        fields['titles'].append(title)
+        fields['contents'].append(content)
+        fields['authors'].append(author)
+        fields['dates'].append(article_date)
+        fields['links'].append(article_url)
+        fields['tags'].append(tags)
+    
+    df = pd.DataFrame({
+        'uniq_key': fields['uniq_keys'],
+        'title': fields['titles'],
+        'source': source,
+        'content': fields['contents'],
+        'article_date': fields['dates'],
+        'author': fields['authors'],
+        'link': fields['links'],
+        'tag': fields['tags'],
+        'captured_at': capture_at
+    })
+
+    time.sleep(2) # sleep for 2 sec. to avoid been too agresive call to the site. 
+    print(f">>>> Complete Crawling Category: {category}, Return Result: {len(df)} Articles")
+
+    return df
+
+
 def crawl_sgrates(currency_date, source_bank='dbs'):
     """ Crawl the SGD rates of singapore Banks"""
     url = f"https://www.sgrates.com/bankrate/{source_bank}.html?date={currency_date}"
@@ -428,26 +499,20 @@ def crawl_article_details(url):
     return full_text
 
 
-def crawl_test():
+def crawl_test_():
     source = 'cointelegraph'
     capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
 
-    url = f"https://u.today/crypto-market-bloodbath-explanation-provided-by-jim-cramer"
+    url = f"https://techcrunch.com/category/cryptocurrency/"
     soup = crawl_site_html_text(url)
 
     # Find article tags with its class
-    articles_text = soup.find_all("p")
-    full_text = ''
+    articles = soup.find_all('div', class_='wp-block-tc23-post-picker')
+    
 
-    if articles_text:
-        # Find all paragraphs within the article
-        paragraphs = articles_text
-        # Collect all the paragraph texts
-        full_text = " ".join([p.get_text() for p in paragraphs])
-        
-        # Print the concatenated text
-        print(full_text)
-    else:
-        print("Article content not found.")
+    for article in articles:
+        print(article)
 
-    return full_text
+    return 
+
+

@@ -69,6 +69,23 @@ def crawl_unchainedcrypto_news():
 
     return all_news_df
 
+
+@task
+def crawl_techcrunch_news(page=None):
+    categories = ['cryptocurrency', 'gaming', 'venture', 'artificial-intelligence', 
+                  'startups', 'fintech', 'fundraising', 'enterprise']
+    print(">>> Start Scraping Latest News from Techcrunch")
+    print('>>> Crawling Tags:', categories)
+    news_list = []
+    for catg in categories:
+        news_articles = wc.crawl_techcrunch(catg)
+        news_list.append(news_articles)
+
+    all_news_df = pd.concat(news_list, ignore_index=True).drop_duplicates(subset=['uniq_key'], keep='first')
+
+    return all_news_df
+
+
 @task
 def get_article_details(article_df):
 
