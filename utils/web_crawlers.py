@@ -570,12 +570,80 @@ def crawl_bitcoinist(category):
     return df
 
 
-
-def crawl_test():
-    source = 'bitcoinist'
+def crawl_coineagle(category):
+    source = 'coineagle'
     capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
 
-    url = f"https://bitcoinist.com"
+    url = f"https://coineagle.com/tag/{category}/"
+    soup = crawl_site_html_text(url)
+
+    # Find article tags with its class
+    articles = soup.find_all('article')
+
+    fields = articles_fields()
+    fields['tags'] = []
+
+    for article in articles:
+        # Extract article URL
+        url_tag = article.find('a', href=True)
+        article_url = url_tag['href'] if url_tag else None
+
+        # Extract title
+        title_tag = article.find('h3', class_='jeg_post_title')
+        title = title_tag.text.strip() if title_tag else None
+
+        # Extract content
+        content_tag = article.find('div', class_='jeg_post_excerpt')
+        content = content_tag.text.strip() if content_tag else None
+
+        # Extract article date and convert to YYYY-MM-DD format
+        date_tag = article.find('div', class_='jeg_meta_date')
+        article_date_raw = date_tag.text.strip() if date_tag else None
+        if article_date_raw:
+            try:
+                article_date = datetime.strptime(article_date_raw, '%B %d, %Y').strftime('%Y-%m-%d')
+            except ValueError:
+                article_date = None  # If the date format is unexpected
+        else:
+            article_date = None
+
+        # No author info found so assigning empty text
+        author = ''
+
+        uniq_key = generate_unique_key(title, source)
+
+        fields['uniq_keys'].append(uniq_key)
+        fields['titles'].append(title)
+        fields['contents'].append(content)
+        fields['authors'].append(author)
+        fields['dates'].append(article_date)
+        fields['links'].append(article_url)
+        fields['tags'].append(category)
+    
+    df = pd.DataFrame({
+        'uniq_key': fields['uniq_keys'],
+        'title': fields['titles'],
+        'source': source,
+        'content': fields['contents'],
+        'article_date': fields['dates'],
+        'author': fields['authors'],
+        'link': fields['links'],
+        'tag': fields['tags'],
+        'captured_at': capture_at
+    })
+
+    time.sleep(2) # sleep for 2 sec. to avoid been too agresive call to the site. 
+    print(f">>>> Complete Crawling Category: {category}, Return Result: {len(df)} Articles")
+
+    return df
+
+
+
+def crawl_test():
+    source = 'coineagle'
+    capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
+
+    url = f"https://coineagle.com/tag/bitcoin/"
     soup = crawl_site_html_text(url)
 
     # Find article tags with its class
@@ -583,7 +651,7 @@ def crawl_test():
 
     for article in articles:
         print(article)
-
+        print('--------------------------------------')
     return 
 
 

@@ -86,7 +86,7 @@ def crawl_techcrunch_news(page=None):
     return all_news_df
 
 @task
-def crawl_bitcoinist_news(page=None):
+def crawl_bitcoinist_news():
     categories = [ 'bitcoin', 'bitcoin-price', 'blockchain-technology', 'industry', 
         'altcoin-price', 'altcoin-news', 'ethereum', 'ripple', 'litecoin', 'eos'
     ]
@@ -95,6 +95,21 @@ def crawl_bitcoinist_news(page=None):
     news_list = []
     for catg in categories:
         news_articles = wc.crawl_bitcoinist(catg)
+        news_list.append(news_articles)
+
+    all_news_df = pd.concat(news_list, ignore_index=True).drop_duplicates(subset=['uniq_key'], keep='first')
+
+    return all_news_df
+
+
+@task
+def crawl_coineagle_news():
+    categories = ['crypto', 'bitcoin', 'ethereum']
+    print(">>> Start Scraping Latest News from Coineagle")
+    print('>>> Crawling Tags:', categories)
+    news_list = []
+    for catg in categories:
+        news_articles = wc.crawl_coineagle(catg)
         news_list.append(news_articles)
 
     all_news_df = pd.concat(news_list, ignore_index=True).drop_duplicates(subset=['uniq_key'], keep='first')
