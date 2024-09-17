@@ -45,6 +45,14 @@ def crawl_news():
     print(f">> All News Articles inserted. \n>> {status}")
     time.sleep(2)
 
+    print("Start Crawlers for bitcoinist ...")
+    df_bitcoinist = cr_task.crawl_bitcoinist_news()
+    print('>> Storing bitcoinist news to DB')
+    status = db.upsert_data2db(NewsArticles, df_bitcoinist, ['uniq_key'], col2update)
+    print(f">> All News Articles inserted. \n>> {status}")
+    time.sleep(2)
+
+
     # print("Start Crawlers for Unchained Crypto ...")
     # df_utoday = cr_task.crawl_unchainedcrypto_news()
     # print('>> Storing Unchained Crypto News to DB')
