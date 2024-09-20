@@ -118,6 +118,22 @@ def crawl_coineagle_news():
 
 
 @task
+def crawl_fxempire_news():
+    categories = ['cryptocurrencies-news', 'forex-news', 'economic-news', 'stocks-news']
+    print(">>> Start Scraping Latest News from FXempire")
+    print('>>> Crawling Tags:', categories)
+    news_list = []
+    for catg in categories:
+        news_articles = wc.crawl_fxempire(catg)
+        news_list.append(news_articles)
+
+    all_news_df = pd.concat(news_list, ignore_index=True).drop_duplicates(subset=['uniq_key'], keep='first')
+    df_cleaned = all_news_df.dropna(subset=['title'])
+
+    return df_cleaned
+
+
+@task
 def get_article_details(article_df):
 
     article_df['full_content'] = article_df['link'].apply(wc.crawl_article_details)

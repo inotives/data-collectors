@@ -5,66 +5,38 @@ import news_data_collectors.crawler_tasks as cr_task
 from models.news_articles import NewsArticles
 import utils.db as db
 
+def crawl_site(site_name, crawler_func, col2update):
+    sleep_time = 2
+    try: 
+        print(f">> Crawling for {site_name} News ... ...")
+        df_news = crawler_func
+        print(f">> Start Storing {site_name} news to DB. Total Articles:{len(df_news)}")
+        status = db.upsert_data2db(NewsArticles, df_news, ['uniq_key'], col2update)
+        print(f">> All News Articles inserted. \n>> {status}")
+        time.sleep(sleep_time)
+    except AttributeError as e:
+        print(f"Attribute Error:: {e}")
+    except Exception as e: 
+        print(f"ERROR OCCURED: {e}")
+
+
 @flow
 def crawl_news():
     col2update = ['uniq_key', 'source', 'title', 'content', 'link', 'article_date', 'author', 'tag', 'captured_at']
     # Crawlers 
 
-    print("Start Crawlers for CoinTelegraph ...")
-    df_cointelegraph = cr_task.crawl_cointelegraph()
-    print('>> Storing Cointelegraph to DB')
-    status = db.upsert_data2db(NewsArticles, df_cointelegraph, ['uniq_key'], col2update)
-    print(f">> All News Articles inserted. \n>> {status}")
-    time.sleep(2)
-
-    print("Start Crawlers for Crypto.news ...")
-    df_cryptonews = cr_task.crawl_cryptonews()
-    print('>> Storing CryptoNews to DB')
-    status = db.upsert_data2db(NewsArticles, df_cryptonews, ['uniq_key'], col2update)
-    print(f">> All News Articles inserted. \n>> {status}")
-    time.sleep(2)
+    crawl_site('CoinTelegraph', cr_task.crawl_cointelegraph(), col2update)
+    crawl_site('Investing.com', cr_task.crawl_investingcom_news(), col2update)
+    crawl_site('Crypto.news', cr_task.crawl_cryptonews(), col2update)
+    crawl_site('u.today', cr_task.crawl_utoday_news(), col2update)
+    crawl_site('techcrunch', cr_task.crawl_techcrunch_news(), col2update)
+    crawl_site('bitcoinist', cr_task.crawl_bitcoinist_news(), col2update)
+    crawl_site('coineagle', cr_task.crawl_coineagle_news(), col2update)
+    crawl_site('FXempire', cr_task.crawl_fxempire_news(), col2update)
     
-    print("Start Crawlers for Investing.com ...")
-    df_investingcom = cr_task.crawl_investingcom_news()
-    print('>> Storing Investing.com News to DB')
-    status = db.upsert_data2db(NewsArticles, df_investingcom, ['uniq_key'], col2update)
-    print(f">> All News Articles inserted. \n>> {status}")
-    time.sleep(2)
-
-    print("Start Crawlers for u.today ...")
-    df_utoday = cr_task.crawl_utoday_news()
-    print('>> Storing U.Today News to DB')
-    status = db.upsert_data2db(NewsArticles, df_utoday, ['uniq_key'], col2update)
-    print(f">> All News Articles inserted. \n>> {status}")
-    time.sleep(2)
-
-    print("Start Crawlers for techcrunch ...")
-    df_techcrunch = cr_task.crawl_techcrunch_news()
-    print('>> Storing techcrunch news to DB')
-    status = db.upsert_data2db(NewsArticles, df_techcrunch, ['uniq_key'], col2update)
-    print(f">> All News Articles inserted. \n>> {status}")
-    time.sleep(2)
-
-    print("Start Crawlers for bitcoinist ...")
-    df_bitcoinist = cr_task.crawl_bitcoinist_news()
-    print('>> Storing bitcoinist news to DB')
-    status = db.upsert_data2db(NewsArticles, df_bitcoinist, ['uniq_key'], col2update)
-    print(f">> All News Articles inserted. \n>> {status}")
-    time.sleep(2)
-
-    print("Start Crawlers for coineagle ...")
-    df_coineagle = cr_task.crawl_coineagle_news()
-    print('>> Storing coineagle news to DB')
-    status = db.upsert_data2db(NewsArticles, df_coineagle, ['uniq_key'], col2update)
-    print(f">> All News Articles inserted. \n>> {status}")
-    time.sleep(2)
-
-    # print("Start Crawlers for Unchained Crypto ...")
-    # df_utoday = cr_task.crawl_unchainedcrypto_news()
-    # print('>> Storing Unchained Crypto News to DB')
-    # status_5 = insert_data2db(NewsArticles, df_utoday, ['uniq_key'])
-    # print(f">> All News Articles inserted. \n>> {status_5}")
-    # time.sleep(2)
+    # crawl_site('Unchained Crypto', cr_task.crawl_unchainedcrypto_news(), col2update)
+    
+    
 
 @flow
 def crawl_article_detail(rows=10):

@@ -639,15 +639,87 @@ def crawl_coineagle(category):
 
 
 
-def crawl_test():
-    source = 'coineagle'
+def crawl_fxempire(category, page=None):
+    source = 'fxempire'
     capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
 
-    url = f"https://coineagle.com/tag/bitcoin/"
+    url = f"https://www.fxempire.com/news/{category}"
+    soup = crawl_site_html_text(url)
+
+    # Find all relevant li tags
+    articles = soup.find_all('li', class_='Lists__ListItem-sc-mz7y7o-2')
+
+    fields = articles_fields()
+    fields['tags'] = []
+
+    for article in articles:
+        # Extract article URL
+        url_tag = article.find('a', href=True)
+        article_url = f"https://fxempire.com{url_tag['href']}" if url_tag else None
+
+        # Extract title
+        title_tag = article.find('h3', class_='Titles-sc-1o1kplc-0')
+        title = title_tag.text.strip() if title_tag else None
+
+        # Extract content
+        content_tag = article.find('p', class_='Typography-sc-1d81win-0')
+        content = content_tag.text.strip() if content_tag else None
+
+        # Extract article date and convert to YYYY-MM-DD format
+        date_tag = article.find('time', {'data-cy': 'timestamp'})
+        article_date_raw = date_tag['datetime'] if date_tag else None
+        if article_date_raw:
+            try:
+                article_date = datetime.strptime(article_date_raw, '%Y-%m-%dT%H:%M:%S').strftime('%Y-%m-%d')
+            except ValueError:
+                article_date = None  # Handle unexpected date format
+        else:
+            article_date = None
+
+        # Extract author
+        author_tag = article.find('div', class_='Card-sc-1ib64vn-0 bKxa-Dg')
+        author = author_tag.text.strip() if author_tag else None
+
+        uniq_key = generate_unique_key(title, source)
+
+        fields['uniq_keys'].append(uniq_key)
+        fields['titles'].append(title)
+        fields['contents'].append(content)
+        fields['authors'].append(author)
+        fields['dates'].append(article_date)
+        fields['links'].append(article_url)
+        fields['tags'].append(category)
+    
+    df = pd.DataFrame({
+        'uniq_key': fields['uniq_keys'],
+        'title': fields['titles'],
+        'source': source,
+        'content': fields['contents'],
+        'article_date': fields['dates'],
+        'author': fields['authors'],
+        'link': fields['links'],
+        'tag': fields['tags'],
+        'captured_at': capture_at
+    })
+
+    df_cleaned = df.dropna(subset=['title'])
+
+    time.sleep(2) # sleep for 2 sec. to avoid been too agresive call to the site. 
+    print(f">>>> Complete Crawling Category: {category}, Return Result: {len(df_cleaned)} Articles")
+
+    return df_cleaned
+
+
+
+def crawl_test():
+    source = 'fxempire'
+    capture_at = datetime.now().strftime('%Y-%m-%d %H:%M:00')
+
+    url = f"https://www.fxempire.com/news/cryptocurrencies-news"
     soup = crawl_site_html_text(url)
 
     # Find article tags with its class
-    articles = soup.find_all('article')
+    articles = soup.find_all('li')
 
     for article in articles:
         print(article)
